@@ -44,3 +44,20 @@
         - set nat source rule 100 outbound-interface 'eth0'
         - set nat source rule 100 source address '10.0.0.0/8'
         - set nat source rule 100 translation address 'masquerade'
+
+  - name: setup dhcp on LAN
+    vyos.vyos.vyos_config:
+      lines:
+        - set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 default-router 10.0.0.1
+        - set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 dns-server 10.0.0.1
+        - set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 domain-name 'edge.local'
+        - set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 lease 86400
+        - set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 start 10.0.0.50
+        - set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 stop 10.0.0.200
+  
+  - name: setup DNS forwarding on LAN
+    vyos.vyos.vyos_config:
+      lines:
+        - set service dns forwarding cache-side 0
+        - set service dns forwarding listen-address 10.0.0.1
+        - set service dns forwarding allow-from '10.0.0.0/8'
