@@ -1,0 +1,46 @@
+---
+- hosts: vyos
+  tasks: 
+  - name: configure hostname and domain name
+    vyos.vyos.vyos_system:
+      host_name: edge01
+      domain_name: edge01.matthew-cloud.com
+  
+  - name: set nameservers
+    vyos.vyos.vyos_system:
+      name_server:
+        - 1.1.1.1
+        - 1.0.0.1
+
+  - name: set interfaces
+    vyos.vyos.vyos_interfaces:
+      config:
+        - name: eth0
+          enabled: true
+          description: WAN address
+        - name: eth1
+          enabled: true
+          description: LAN address
+
+  - name: set WAN DHCP
+    vyos.vyos.vyos_l3_interfaces:
+      config:
+        - name: eth0
+          ipv4:
+            - address: dhcp
+          ipv6:
+            - address: dhcpv6
+  
+  - name: set LAN Gateway IP
+    vyos.vyos.vyos_l3_interfaces:
+      config:
+        - name: eth1
+          ipv4:
+            - addresses: 10.0.0.1/24
+  
+  - name: setup NAT
+    vyos.vyos.vyos_config:
+      lines:
+        - set nat source rule 100 outbound-interface 'eth0'
+        - set nat source rule 100 source address '10.0.0.0/8'
+        - set nat source rule 100 translation address 'masquerade'
